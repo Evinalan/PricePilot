@@ -1,76 +1,45 @@
-import { useEffect, useState } from "react";
-import API from "./services/api";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate
+} from "react-router-dom";
 
-function App() {
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
+const Dashboard = () => {
+  return <h1>Dashboard</h1>;
+};
 
-    useEffect(() => {
+const App = () => {
+  return (
+    <BrowserRouter>
+      <Routes>
 
-        const fetchProducts = async () => {
+        <Route
+          path="/"
+          element={<Navigate to="/login" replace />}
+        />
 
-            try {
+        <Route
+          path="/login"
+          element={<Login />}
+        />
 
-                const response =
-                    await API.get("/products");
+        <Route
+          path="/register"
+          element={<Register />}
+        />
 
-                setProducts(
-                    response.data.products
-                );
+        <Route
+          path="/dashboard"
+          element={<Dashboard />}
+        />
 
-            } catch (error) {
-
-                console.error(
-                    "Failed to fetch products:",
-                    error
-                );
-
-            } finally {
-
-                setLoading(false);
-
-            }
-
-        };
-
-        fetchProducts();
-
-    }, []);
-
-    if (loading) {
-        return <h1>Loading...</h1>;
-    }
-
-    return (
-        <div>
-
-            <h1>PricePilot</h1>
-
-            <h2>Products</h2>
-
-            {products.map((product) => (
-
-                <div key={product._id}>
-
-                    <h3>
-                        {product.name}
-                    </h3>
-
-                    <p>
-                        Brand: {product.brand}
-                    </p>
-
-                    <p>
-                        Category: {product.category}
-                    </p>
-
-                </div>
-
-            ))}
-
-        </div>
-    );
-}
+      </Routes>
+    </BrowserRouter>
+  );
+};
 
 export default App;
