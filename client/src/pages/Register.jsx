@@ -1,89 +1,78 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { registerUser } from "../api/authApi";
 
-import api from "../api";
-
-const Register = () => {
-  const navigate = useNavigate();
+function Register() {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const [error, setError] = useState("");
-
-  const handleSubmit = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
 
     try {
-      setError("");
 
-      await api.post("/auth/register", {
+      const data = await registerUser({
         name,
         email,
         password
       });
 
-      navigate("/login");
+      console.log(data);
+
+      alert("Registration successful!");
+
     } catch (error) {
-      setError(
-        error.response?.data?.message ||
-        "Registration failed"
-      );
+
+      console.log(error);
+
+      alert("Registration failed!");
+
     }
   };
 
   return (
     <div>
-      <h1>Create PricePilot Account</h1>
 
-      {error && (
-        <p>{error}</p>
-      )}
+      <h1>Create Account</h1>
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Name</label>
+      <form onSubmit={handleRegister}>
 
-          <input
-            type="text"
-            value={name}
-            onChange={(e) =>
-              setName(e.target.value)
-            }
-          />
-        </div>
+        <input
+          type="text"
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
 
-        <div>
-          <label>Email</label>
+        <br />
 
-          <input
-            type="email"
-            value={email}
-            onChange={(e) =>
-              setEmail(e.target.value)
-            }
-          />
-        </div>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-        <div>
-          <label>Password</label>
+        <br />
 
-          <input
-            type="password"
-            value={password}
-            onChange={(e) =>
-              setPassword(e.target.value)
-            }
-          />
-        </div>
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+        <br />
 
         <button type="submit">
           Register
         </button>
+
       </form>
+
     </div>
   );
-};
+}
 
 export default Register;

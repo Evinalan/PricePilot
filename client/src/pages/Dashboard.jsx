@@ -1,25 +1,16 @@
-import { useAuth } from "../context/AuthContext";
-
-const Dashboard = () => {
-  const { user, logout } = useAuth();
+function Dashboard() {
 
   return (
     <div>
-      <h1>PricePilot Dashboard</h1>
 
-      <h2>
-        Welcome, {user?.name}
-      </h2>
+      <h1>Dashboard</h1>
 
       <p>
-        Email: {user?.email}
+        You are logged in!
       </p>
 
-      <button onClick={logout}>
-        Logout
-      </button>
     </div>
   );
-};
+}
 
 export default Dashboard;

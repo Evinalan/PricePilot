@@ -1,30 +1,23 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Login from "./pages/Login";
+import Home from "./pages/Home";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Dashboard from "./pages/Dashboard";
+import Navbar from "./components/Navbar";
 
-const Dashboard = () => {
-  return <h1>Dashboard</h1>;
-};
-
-const App = () => {
+function App() {
   return (
     <BrowserRouter>
+
+      <Navbar />
+
       <Routes>
 
         <Route
           path="/"
-          element={<Navigate to="/login" replace />}
-        />
-
-        <Route
-          path="/login"
-          element={<Login />}
+          element={<Home />}
         />
 
         <Route
@@ -33,13 +26,28 @@ const App = () => {
         />
 
         <Route
+          path="/login"
+          element={<Login />}
+        />
+
+        <Route
           path="/dashboard"
-          element={<Dashboard />}
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="*"
+          element={<Navigate to="/register" replace />}
         />
 
       </Routes>
+
     </BrowserRouter>
   );
-};
+}
 
 export default App;
