@@ -3,3 +3,13 @@ node_modules/
 dist/
 .vite/
 .DS_Store
+node_modules/
+.env
+.env.*
+!.env.example
+
+dist/
+build/
+
+.DS_Store
+npm-debug.log*

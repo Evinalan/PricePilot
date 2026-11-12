@@ -1,0 +1,62 @@
+
+services:
+
+  # MongoDB Database
+  mongo:
+    image: mongo:7
+    container_name: pricepilot-mongo
+    restart: unless-stopped
+
+    ports:
+      - "27017:27017"
+
+    volumes:
+      - mongodb_data:/data/db
+
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  # Node.js Backend
+  server:
+    build: ./server
+    container_name: pricepilot-server
+    restart: unless-stopped
+
+    ports:
+      - "5000:5000"
+
+    env_file:
+      - ./server/.env
+
+    environment:
+      MONGO_URI: mongodb://mongo:27017/pricepilot
+
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+
+  # React Frontend
+  client:
+    build:
+      context: ./client
+      args:
+        VITE_API_URL: /api
+
+    container_name: pricepilot-client
+    restart: unless-stopped
+
+    ports:
+      - "5173:80"
+
+    depends_on:
+      - server
+
+
+# Persistent MongoDB storage
+volumes:
+  mongodb_data:

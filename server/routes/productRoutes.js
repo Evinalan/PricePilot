@@ -1,56 +1,36 @@
+
 const express = require("express");
 
-const Product = require("../models/Product");
+const {
+  createProduct,
+  addManualOffer,
+  getProducts,
+  getProductById
+} = require("../controllers/productController");
+
+const {
+  saveEbayProduct,
+  syncManualProductsWithEbay
+} = require("../controllers/ebayProductController");
 
 const router = express.Router();
+router.post(
+  "/sync-ebay",
+  syncManualProductsWithEbay
+);
+// Save eBay product
+router.post("/save-ebay-product", saveEbayProduct);
 
-router.get("/", async (req, res) => {
+// Create manual product
+router.post("/", createProduct);
 
-    try {
+// Add manual offer to an existing product
+router.post("/:id/manual-offer", addManualOffer);
 
-        const products =
-            await Product.find();
+// Get all products
+router.get("/", getProducts);
 
-        res.json({
-            success: true,
-            count: products.length,
-            products
-        });
-
-    } catch (error) {
-
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
-
-    }
-
-});
-router.post("/", async (req, res) => {
-
-    try {
-
-        const product = await Product.create({
-            name: req.body.name,
-            brand: req.body.brand,
-            category: req.body.category
-        });
-
-        res.status(201).json({
-            success: true,
-            product
-        });
-
-    } catch (error) {
-
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
-
-    }
-
-});
+// Get single product
+router.get("/:id", getProductById);
 
 module.exports = router;

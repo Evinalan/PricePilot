@@ -182,3 +182,50 @@
     border-right-color: var(--border);
   }
 }
+.pp-selected-listing {
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+}
+
+.pp-selected-listing p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.pp-selected-listing button {
+  margin-top: 8px;
+  cursor: pointer;
+}
+
+/* ADD TO PRICEPILOT BUTTON */
+
+.pp-add-pricepilot-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 12px 15px;
+  margin-top: 14px;
+  border: none;
+  border-radius: 9px;
+  background: #2563eb;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.pp-add-pricepilot-button:hover:not(:disabled) {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.pp-add-pricepilot-button:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
