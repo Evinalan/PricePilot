@@ -21,8 +21,10 @@ Price comparison and price history platform built using the MERN stack.
 
 ## Project Structure
 
+```text
 client/
     React frontend
 
 server/
     Express backend
+```
