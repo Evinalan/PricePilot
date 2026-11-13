@@ -10,7 +10,7 @@ RUN npm install
 
 COPY . .
 
-ARG VITE_API_URL=/api
+ARG VITE_API_URL=https://pricepilot-bu1w.onrender.com/api
 ENV VITE_API_URL=$VITE_API_URL
 
 RUN npm run build

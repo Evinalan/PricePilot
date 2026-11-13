@@ -1,7 +1,10 @@
 
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "/api";
+const API_URL = (
+  import.meta.env.VITE_API_URL ||
+  "https://pricepilot-bu1w.onrender.com/api"
+).replace(/\/$/, "");
 
 export const registerUser = async (userData) => {
   const response = await axios.post(
