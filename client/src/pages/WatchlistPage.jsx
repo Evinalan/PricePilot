@@ -1,57 +1,35 @@
 
 import { useEffect, useState } from "react";
+import api from "../api";
 
 function WatchlistPage() {
   const [items, setItems] = useState([]);
 
   const fetchWatchlist = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const response = await api.get("/watchlist");
 
-      const response = await fetch(
-        "http://localhost:5000/api/watchlist",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message);
-      }
-
-      setItems(data.watchlist);
+      setItems(response.data.watchlist || []);
 
     } catch (error) {
-      console.error(error);
+      console.error(
+        "Fetch watchlist error:",
+        error.response?.data || error.message
+      );
     }
   };
 
   const removeProduct = async (id) => {
     try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(
-        `http://localhost:5000/api/watchlist/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Unable to remove product");
-      }
+      await api.delete(`/watchlist/${id}`);
 
       fetchWatchlist();
 
     } catch (error) {
-      alert(error.message);
+      alert(
+        error.response?.data?.message ||
+        "Unable to remove product"
+      );
     }
   };
 
@@ -68,7 +46,9 @@ function WatchlistPage() {
       ) : (
         items.map((item) => (
           <div key={item._id}>
-            <h3>{item.product?.name || item.product?.title}</h3>
+            <h3>
+              {item.product?.name || item.product?.title}
+            </h3>
 
             <button
               onClick={() => removeProduct(item._id)}

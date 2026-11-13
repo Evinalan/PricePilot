@@ -21,5 +21,12 @@ export const loginUser = async (userData) => {
     userData
   );
 
+  // Save JWT token after successful login
+  const token = response.data.token;
+
+  if (token) {
+    localStorage.setItem("token", token);
+  }
+
   return response.data;
 };

@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import api from "../api";
 
 function PriceAlertForm({
   productId,
@@ -34,46 +35,25 @@ function PriceAlertForm({
         return;
       }
 
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        alert("Please log in to create a price alert.");
-        return;
-      }
-
       setLoading(true);
 
-      const response = await fetch(
-        "http://localhost:5000/api/price-alerts",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            productId,
-            retailer,
-            externalId: String(externalId),
-            targetPrice: Number(targetPrice)
-          })
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to create alert."
-        );
-      }
+      await api.post("/price-alerts", {
+        productId,
+        retailer,
+        externalId: String(externalId),
+        targetPrice: Number(targetPrice)
+      });
 
       alert("Price alert created successfully!");
 
       setTargetPrice("");
 
     } catch (error) {
-      alert(error.message);
+      alert(
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to create alert."
+      );
     } finally {
       setLoading(false);
     }
@@ -94,7 +74,8 @@ function PriceAlertForm({
 
       {currentPrice != null && (
         <p>
-          Current Price: ₹{Number(currentPrice).toLocaleString("en-IN")}
+          Current Price: ₹
+          {Number(currentPrice).toLocaleString("en-IN")}
         </p>
       )}
 
@@ -110,11 +91,7 @@ function PriceAlertForm({
       <button
         type="button"
         onClick={createAlert}
-        disabled={
-          loading ||
-          !retailer ||
-          !externalId
-        }
+        disabled={loading || !retailer || !externalId}
       >
         {loading ? "Creating..." : "Create Alert"}
       </button>
@@ -124,4 +101,3 @@ function PriceAlertForm({
 }
 
 export default PriceAlertForm;
-

@@ -1,4 +1,4 @@
-
+import api from "../api";
 import { useEffect, useState } from "react";
 
 import {
@@ -27,48 +27,53 @@ useEffect(() => {
     return;
   }
 
-  const fetchHistory = async () => {
-    try {
-      setLoading(true);
-      setError("");
+  
+const fetchHistory = async () => {
+  try {
+    setLoading(true);
+    setError("");
 
-      const params = new URLSearchParams();
+    const params = {
+      retailer
+    };
 
-      params.append("retailer", retailer);
-
-      if (externalId) {
-        params.append("externalId", externalId);
-      }
-
-      const response = await fetch(
-        `http://localhost:5000/api/price-history/${productId}?${params.toString()}`
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to fetch price history"
-        );
-      }
-
-      const chartData = (data.history || []).map(item => ({
-        date: new Date(item.recordedAt).toLocaleString(),
-        price: Number(item.price),
-        currency: item.currency || "INR",
-        retailer: item.retailer,
-        externalId: item.externalId
-      }));
-
-      setHistory(chartData);
-
-    } catch (err) {
-      setError(err.message);
-      setHistory([]);
-    } finally {
-      setLoading(false);
+    if (externalId) {
+      params.externalId = externalId;
     }
-  };
+
+    const response = await api.get(
+      `/price-history/${productId}`,
+      { params }
+    );
+
+    const data = response.data;
+
+    const chartData = (data.history || []).map(item => ({
+      date: new Date(item.recordedAt).toLocaleString(),
+      price: Number(item.price),
+      currency: item.currency || "INR",
+      retailer: item.retailer,
+      externalId: item.externalId
+    }));
+
+    setHistory(chartData);
+
+  } catch (err) {
+    console.error("Fetch price history error:", err);
+
+    setError(
+      err.response?.data?.message ||
+      err.message ||
+      "Failed to fetch price history"
+    );
+
+    setHistory([]);
+
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // Fetch history immediately
   fetchHistory();

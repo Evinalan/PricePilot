@@ -1,7 +1,6 @@
 
-
-
 import { useEffect, useState } from "react";
+import api from "../api";
 
 import {
   Search,
@@ -41,7 +40,6 @@ function ProductPage() {
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState(null);
 
-  // eBay save button states
   const [savingEbayId, setSavingEbayId] = useState(null);
   const [savedEbayIds, setSavedEbayIds] = useState([]);
 
@@ -69,27 +67,29 @@ function ProductPage() {
       setLoading(true);
       setError("");
 
-      let url = "http://localhost:5000/api/products";
+      const response = await api.get("/products", {
+        params: searchText.trim()
+          ? { search: searchText.trim() }
+          : {}
+      });
 
-      if (searchText.trim()) {
-        url += `?search=${encodeURIComponent(searchText)}`;
-      }
-
-      const response = await fetch(url);
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to fetch products"
-        );
-      }
+      const data = response.data;
 
       setProducts(data.products || []);
-      setSelectedOffer(null);
 
-    } catch (err) {
-      setError(err.message);
-      console.error("Fetch products error:", err);
+    } catch (error) {
+      console.error(
+        "Fetch products error:",
+        error.response?.data || error.message
+      );
+
+      setError(
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to fetch products"
+      );
+
+      setProducts([]);
 
     } finally {
       setLoading(false);
@@ -105,30 +105,30 @@ function ProductPage() {
       setSyncing(true);
       setSyncResult(null);
 
-      const response = await fetch(
-        "http://localhost:5000/api/products/sync-ebay",
-        {
-          method: "POST"
-        }
-      );
+      const response = await api.post("/products/sync-ebay");
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Synchronization failed"
-        );
-      }
+      const data = response.data;
 
       setSyncResult(data);
 
       await fetchProducts(search);
 
-      alert("Product synchronization completed!");
+      alert(
+        data.message ||
+        "Product synchronization completed!"
+      );
 
     } catch (error) {
-      console.error("Sync error:", error);
-      alert(error.message);
+      console.error(
+        "Sync error:",
+        error.response?.data || error.message
+      );
+
+      alert(
+        error.response?.data?.message ||
+        error.message ||
+        "Synchronization failed"
+      );
 
     } finally {
       setSyncing(false);
@@ -141,17 +141,16 @@ function ProductPage() {
 
   const fetchEbayProducts = async (searchText) => {
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/retailers/ebay/search?search=${encodeURIComponent(searchText)}`
+      const response = await api.get(
+        "/retailers/ebay/search",
+        {
+          params: {
+            search: searchText
+          }
+        }
       );
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to fetch eBay products"
-        );
-      }
+      const data = response.data;
 
       if (data.success) {
         setEbayProducts(data.products || []);
@@ -159,8 +158,12 @@ function ProductPage() {
         setEbayProducts([]);
       }
 
-    } catch (err) {
-      console.error("eBay search error:", err);
+    } catch (error) {
+      console.error(
+        "eBay search error:",
+        error.response?.data || error.message
+      );
+
       setEbayProducts([]);
     }
   };
@@ -172,38 +175,28 @@ function ProductPage() {
   const addEbayProduct = async (item) => {
     try {
       if (!item.itemId) {
-        throw new Error("This eBay listing does not have a valid listing ID.");
+        throw new Error(
+          "This eBay listing does not have a valid listing ID."
+        );
       }
 
       setSavingEbayId(item.itemId);
 
-      const response = await fetch(
-        "http://localhost:5000/api/retailers/ebay/save-ebay-product",
+      const response = await api.post(
+        "/retailers/ebay/save-ebay-product",
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            itemId: item.itemId,
-            title: item.title,
-            price: item.price,
-            currency: item.currency,
-            productUrl: item.productUrl,
-            image: item.image
-          })
+          itemId: item.itemId,
+          title: item.title,
+          price: item.price,
+          currency: item.currency,
+          productUrl: item.productUrl,
+          image: item.image
         }
       );
 
-      const data = await response.json();
+      const data = response.data;
 
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Unable to add product to PricePilot"
-        );
-      }
-
-      // Mark this listing as saved in the current page session
+      // Mark listing as saved
       setSavedEbayIds((previousIds) =>
         previousIds.includes(item.itemId)
           ? previousIds
@@ -214,12 +207,21 @@ function ProductPage() {
       await fetchProducts(search);
 
       alert(
-        data.message || "Product added to PricePilot successfully!"
+        data.message ||
+        "Product added to PricePilot successfully!"
       );
 
-    } catch (err) {
-      console.error("Add eBay product error:", err);
-      alert(err.message);
+    } catch (error) {
+      console.error(
+        "Add eBay product error:",
+        error.response?.data || error.message
+      );
+
+      alert(
+        error.response?.data?.message ||
+        error.message ||
+        "Unable to add product to PricePilot"
+      );
 
     } finally {
       setSavingEbayId(null);
@@ -257,7 +259,6 @@ function ProductPage() {
   // ==========================================
 
   return (
-
     <div className="pp-page">
 
       {/* HERO SECTION */}
@@ -376,7 +377,9 @@ function ProductPage() {
               className={syncing ? "pp-spinning" : ""}
             />
 
-            {syncing ? "Synchronizing..." : "Sync eBay Products"}
+            {syncing
+              ? "Synchronizing..."
+              : "Sync eBay Products"}
 
           </button>
 
@@ -447,15 +450,11 @@ function ProductPage() {
             );
 
             const cheapestOffer = availableOffers.length > 0
-
               ? availableOffers.reduce((cheapest, offer) =>
-
                   Number(offer.price) < Number(cheapest.price)
                     ? offer
                     : cheapest
-
                 )
-
               : null;
 
             const fallbackImage = offers.find(
@@ -522,19 +521,15 @@ function ProductPage() {
                   <h3>{product.name}</h3>
 
                   {product.brand && (
-
                     <span className="pp-brand">
                       {product.brand}
                     </span>
-
                   )}
 
                   {product.description && (
-
                     <p className="pp-description">
                       {product.description}
                     </p>
-
                   )}
 
                   {/* CHEAPEST PRICE */}
@@ -725,11 +720,8 @@ function ProductPage() {
                                 onClick={() =>
 
                                   setSelectedOffer({
-
                                     ...offer,
-
                                     productId: product._id
-
                                   })
 
                                 }
@@ -1063,9 +1055,7 @@ function ProductPage() {
       </footer>
 
     </div>
-
   );
-
 }
 
 export default ProductPage;
